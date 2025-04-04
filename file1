@@ -1,0 +1,66 @@
+pip install pandas numpy scikit-learn xgboost matplotlib seaborn
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
+from sklearn.preprocessing import LabelEncoder, StandardScaler
+from xgboost import XGBClassifier
+
+# Set random seed
+np.random.seed(42)
+
+# Step 1: Generate Synthetic Data
+n_samples = 1000
+data = pd.DataFrame({
+    'age': np.random.randint(18, 90, n_samples),
+    'gender': np.random.choice(['Male', 'Female'], n_samples),
+    'length_of_stay': np.random.randint(1, 30, n_samples),
+    'num_prev_admissions': np.random.randint(0, 10, n_samples),
+    'comorbidity_score': np.random.normal(loc=2, scale=1, size=n_samples).round(1),
+    'has_diabetes': np.random.choice([0, 1], n_samples),
+    'has_hypertension': np.random.choice([0, 1], n_samples),
+    'discharged_to_home': np.random.choice([0, 1], n_samples),
+    'readmitted_within_30_days': np.random.choice([0, 1], n_samples, p=[0.7, 0.3])
+})
+
+# Step 2: Preprocessing
+# Encode gender
+data['gender'] = LabelEncoder().fit_transform(data['gender'])
+
+# Features and target
+X = data.drop('readmitted_within_30_days', axis=1)
+y = data['readmitted_within_30_days']
+
+# Normalize features
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# Split into train/test
+X_train, X_test, y_train, y_test = train_test_split(
+    X_scaled, y, test_size=0.3, random_state=42, stratify=y
+)
+
+# Step 3: Train XGBoost Classifier
+model = XGBClassifier(use_label_encoder=False, eval_metric='logloss')
+model.fit(X_train, y_train)
+
+# Step 4: Evaluate Model
+y_pred = model.predict(X_test)
+
+print("\nConfusion Matrix:")
+print(confusion_matrix(y_test, y_pred))
+print("\nClassification Report:")
+print(classification_report(y_test, y_pred))
+print("Accuracy:", accuracy_score(y_test, y_pred))
+
+# Step 5: Feature Importance Plot
+plt.figure(figsize=(10,6))
+sns.barplot(x=model.feature_importances_, y=X.columns)
+plt.title("Feature Importance - Hospital Readmission Prediction")
+plt.xlabel("Importance Score")
+plt.ylabel("Features")
+plt.tight_layout()
+plt.show()
