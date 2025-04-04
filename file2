@@ -1,0 +1,48 @@
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import roc_auc_score
+
+# Initialize models
+log_reg = LogisticRegression()
+rf_clf = RandomForestClassifier(n_estimators=100, random_state=42)
+xgb_clf = XGBClassifier(use_label_encoder=False, eval_metric='logloss')
+
+# Dictionary to store results
+results = {}
+
+# Function to train, predict and evaluate models
+def evaluate_model(name, model):
+    model.fit(X_train, y_train)
+    y_pred = model.predict(X_test)
+    y_proba = model.predict_proba(X_test)[:, 1]
+
+    acc = accuracy_score(y_test, y_pred)
+    auc = roc_auc_score(y_test, y_proba)
+    print(f"\n{name} Results:")
+    print("---------------------------")
+    print("Accuracy:", acc)
+    print("ROC AUC Score:", auc)
+    print("Classification Report:")
+    print(classification_report(y_test, y_pred))
+
+    results[name] = {'accuracy': acc, 'roc_auc': auc}
+
+# Evaluate all models
+evaluate_model("Logistic Regression", log_reg)
+evaluate_model("Random Forest", rf_clf)
+evaluate_model("XGBoost", xgb_clf)
+
+# Plot comparison
+plt.figure(figsize=(8,5))
+bars = plt.bar(results.keys(), [v['accuracy'] for v in results.values()])
+plt.title("Model Accuracy Comparison")
+plt.ylabel("Accuracy")
+plt.ylim(0, 1)
+
+# Annotate bars
+for bar in bars:
+    yval = bar.get_height()
+    plt.text(bar.get_x() + bar.get_width()/2, yval + 0.01, f"{yval:.2f}", ha='center', fontsize=10)
+
+plt.tight_layout()
+plt.show()
