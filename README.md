@@ -79,8 +79,8 @@ python predict_hospital_readmission.py
 
     Deploy as an API or interactive app using Flask or Streamlit.
 
-👨‍⚕️ Author
-
+👨‍⚕️ Author Okes Imoni
+    EmEmail: jennyimoni@gmail.com
 
 Data Scientist & Health Tech Enthusiast
 📧 Contact me | 🌐 LinkedIn
